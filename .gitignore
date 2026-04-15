@@ -1,2 +1,3 @@
 # Archivo .gitignore
 *.csv
+/__pycache__
