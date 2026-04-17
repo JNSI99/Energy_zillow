@@ -14,8 +14,8 @@ the BBL, the fine etc...
 
 # Abrimos el df
 
-df = pd.read_csv("merged.csv", low_memory=False)
 
+df = pd.read_csv("merged.csv", low_memory=False)
 # Ahora vamos a hacer pruebas
 # hacemos un sub df
 
@@ -94,7 +94,7 @@ df_total_emisiones["Emisiones DOB"] = pd.to_numeric(df_total_emisiones["Emisione
 df_total_emisiones["Emisiones Calculadas"] = pd.to_numeric(df_total_emisiones["Emisiones Calculadas"], errors='coerce')
 
 # Ahora sí, calcula la diferencia (los NaN se ignorarán o resultarán en NaN, evitando el error)
-df_total_emisiones["Diferencia"] = abs(df_total_emisiones["Emisiones Calculadas"] - df_total_emisiones["Emisiones DOB"])
+df_total_emisiones["Diferencia"] = df_total_emisiones["Emisiones Calculadas"] - df_total_emisiones["Emisiones DOB"]
 df_total_emisiones["Relativo"] = df_total_emisiones["Diferencia"] / df_total_emisiones["Emisiones DOB"]
 df_total_emisiones['Relativo'] = df_total_emisiones['Relativo'].replace([np.inf, -np.inf], 0)
 
@@ -104,7 +104,7 @@ df_final.drop('Largest Property Use Type - Gross Floor Area (ft²)', axis=1, inp
 df_final.drop('Primary Property Type - Self Selected', axis=1, inplace=True)
 df_final.drop('Coefficient', axis=1, inplace=True)
 
-df_final.to_csv("Fuels.csv",index=False,encoding='utf-8')
+#df_final.to_csv("Fuels.csv",index=False,encoding='utf-8')
 
 """
 
@@ -117,3 +117,8 @@ df_final columns
 df_final_combs data for dashboard
 
 """
+df_final["status"] = df["Exceso"]<0 #True significa que si cumple la normativa
+
+
+df_final.to_csv("Fuels.csv",index=False,encoding='utf-8')
+
