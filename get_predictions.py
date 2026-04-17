@@ -1,25 +1,16 @@
 import pandas as pd
 import Funciones as f
 import Limites as lm
-import certifi
-from rapidfuzz import process, utils
 import numpy as np
 
-"""
-We use merged.csv to do the calculations
-We want to get a df with the fuels consumptions
-the BBL, the fine etc...
-"""
-
-
-# Abrimos el df
+#2030 Prediction
 
 
 df = pd.read_csv("merged.csv", low_memory=False)
 # Ahora vamos a hacer pruebas
 # hacemos un sub df
 
-df_test_fuels = df[["BBL",
+df_test_fuels = df[["Calendar Year","BBL",
                     "Fuel Oil #2 Use (kBtu)",
                     "Fuel Oil #4 Use (kBtu)",
                     "Fuel Oil #5 & 6 Use (kBtu)",
@@ -28,8 +19,7 @@ df_test_fuels = df[["BBL",
                     "Electricity Use - Grid Purchase (kWh)",
                     "District Steam Use (kBtu)",
                     "Kerosene Use (kBtu)",
-                    "Propane Use (kBtu)",
-                    "Calendar Year"]].copy()
+                    "Propane Use (kBtu)"]].copy()
 
 list = ["BBL",
         "Fuel Oil #2 Use (kBtu)",
@@ -63,7 +53,9 @@ df_test_fuels["Emisiones"] = (df_test_fuels["Fuel Oil #2 Use (kBtu)"] * 0.000074
 
 df_emisions = df[
     ["Calendar Year","BBL", "Largest Property Use Type - Gross Floor Area (ft²)", "Primary Property Type - Self Selected"]].copy()
-year = 2024
+
+#Aqui se calcula la multa
+year = 2030
 df_emisions["Coefficient"] = df_emisions["Primary Property Type - Self Selected"].apply(
     lambda x: lm.get_emission_factor(x, year))
 
@@ -77,51 +69,57 @@ df_emisions["Limite"] = (df_emisions["Largest Property Use Type - Gross Floor Ar
 
 
 df_emisions["Exceso"] = df_test_fuels["Emisiones"] - df_emisions["Limite"]
-df_emisions["multa"] = df_emisions["Exceso"] * 268
+df_emisions["multa 2030"] = df_emisions["Exceso"] * 268
+
+df_predictions = df_emisions[["BBL","multa 2030"]].copy()
+
+#Calculamos 2035
+
+year = 2035
+df_emisions["Coefficient"] = df_emisions["Primary Property Type - Self Selected"].apply(
+    lambda x: lm.get_emission_factor(x, year))
+
+df_emisions["Largest Property Use Type - Gross Floor Area (ft²)"] = pd.to_numeric(
+    df_emisions["Largest Property Use Type - Gross Floor Area (ft²)"].replace("Not Available", np.nan), errors='coerce')
+df_emisions = df_emisions.fillna(0)
+
+df_emisions["Limite"] = (df_emisions["Largest Property Use Type - Gross Floor Area (ft²)"] *
+                         df_emisions["Coefficient"])
 
 
-# 1. Crea el DataFrame usando DOBLE corchete [[]] para mantenerlo como DataFrame
-df_total_emisiones = df[["BBL", "Total (Location-Based) GHG Emissions (Metric Tons CO2e)"]].copy()
 
-# 2. Renombra la columna original para mayor claridad
-df_total_emisiones.rename(columns={"Total (Location-Based) GHG Emissions (Metric Tons CO2e)": "Emisiones DOB"},
-                          inplace=True)
+df_emisions["Exceso"] = df_test_fuels["Emisiones"] - df_emisions["Limite"]
+df_emisions["multa 2035"] = df_emisions["Exceso"] * 268
 
-# 3. Asigna los cálculos (Asegúrate de que los índices coincidan)
-df_total_emisiones["Emisiones Calculadas"] = df_test_fuels["Emisiones"]
+df_predictions["multa 2035"] = df_emisions["multa 2035"]
 
-# Convertir a numérico y forzar errores a NaN (esto convierte cualquier texto residual en 'Not a Number')
-df_total_emisiones["Emisiones DOB"] = pd.to_numeric(df_total_emisiones["Emisiones DOB"], errors='coerce')
-df_total_emisiones["Emisiones Calculadas"] = pd.to_numeric(df_total_emisiones["Emisiones Calculadas"], errors='coerce')
-
-# Ahora sí, calcula la diferencia (los NaN se ignorarán o resultarán en NaN, evitando el error)
-df_total_emisiones["Diferencia"] = df_total_emisiones["Emisiones Calculadas"] - df_total_emisiones["Emisiones DOB"]
-df_total_emisiones["Relativo"] = df_total_emisiones["Diferencia"] / df_total_emisiones["Emisiones DOB"]
-df_total_emisiones['Relativo'] = df_total_emisiones['Relativo'].replace([np.inf, -np.inf], 0)
+#Calculamos 2040
 
 
-df_final = pd.merge(df_emisions, df_total_emisiones, how='inner', on='BBL')
-df_final.drop('Largest Property Use Type - Gross Floor Area (ft²)', axis=1, inplace=True)
-df_final.drop('Primary Property Type - Self Selected', axis=1, inplace=True)
-df_final.drop('Coefficient', axis=1, inplace=True)
+year = 2040
+df_emisions["Coefficient"] = df_emisions["Primary Property Type - Self Selected"].apply(
+    lambda x: lm.get_emission_factor(x, year))
 
-#df_final.to_csv("Fuels.csv",index=False,encoding='utf-8')
+df_emisions["Largest Property Use Type - Gross Floor Area (ft²)"] = pd.to_numeric(
+    df_emisions["Largest Property Use Type - Gross Floor Area (ft²)"].replace("Not Available", np.nan), errors='coerce')
+df_emisions = df_emisions.fillna(0)
 
-"""
-
-df_final columns
-""Calendar Year
-'BBL'
-'Limite',
-'Exceso', 'multa', 'Emisiones DOB', 'Emisiones Calculadas',
-'Diferencia', 'Relativo'
-"Status"],
-
-df_final_combs data for dashboard
-
-"""
-df_final["status"] = df_final["Exceso"]<0 #True significa que si cumple la normativa
+df_emisions["Limite"] = (df_emisions["Largest Property Use Type - Gross Floor Area (ft²)"] *
+                         df_emisions["Coefficient"])
 
 
-df_final.to_csv("fuels.csv",index=False,encoding='utf-8')
+
+df_emisions["Exceso"] = df_test_fuels["Emisiones"] - df_emisions["Limite"]
+df_emisions["multa 2040"] = df_emisions["Exceso"] * 268
+
+df_predictions["multa 2040"] = df_emisions["multa 2040"]
+
+df_predictions.to_csv("predictions.csv", index=False,encoding="utf-8")
+
+
+
+
+
+
+
 

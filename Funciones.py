@@ -40,7 +40,7 @@ def clean_ll84(df):
     "Indirect (Location-Based) GHG Emissions (Metric Tons CO2e)",
     "Site EUI (kBtu/ft²)",
     "ENERGY STAR Score",
-    "Year Ending"]
+    "Calendar Year"]
 
     df2 = df[cols].copy()
     df2.to_csv('clean_ll84.csv',index = False,encoding='utf-8')
