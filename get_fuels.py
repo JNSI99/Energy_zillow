@@ -81,7 +81,7 @@ df_emisions["multa"] = df_emisions["Exceso"] * 268
 
 
 # 1. Crea el DataFrame usando DOBLE corchete [[]] para mantenerlo como DataFrame
-df_total_emisiones = df[["BBL", "Total (Location-Based) GHG Emissions (Metric Tons CO2e)"]].copy()
+df_total_emisiones = df[["BBL","Calendar Year", "Total (Location-Based) GHG Emissions (Metric Tons CO2e)"]].copy()
 
 # 2. Renombra la columna original para mayor claridad
 df_total_emisiones.rename(columns={"Total (Location-Based) GHG Emissions (Metric Tons CO2e)": "Emisiones DOB"},
@@ -100,7 +100,8 @@ df_total_emisiones["Relativo"] = df_total_emisiones["Diferencia"] / df_total_emi
 df_total_emisiones['Relativo'] = df_total_emisiones['Relativo'].replace([np.inf, -np.inf], 0)
 
 
-df_final = pd.merge(df_emisions, df_total_emisiones, how='inner', on='BBL')
+df_final = pd.merge(df_emisions, df_total_emisiones, how='inner', on=['BBL',"Calendar Year"])
+
 df_final.drop('Largest Property Use Type - Gross Floor Area (ft²)', axis=1, inplace=True)
 df_final.drop('Primary Property Type - Self Selected', axis=1, inplace=True)
 df_final.drop('Coefficient', axis=1, inplace=True)
@@ -121,7 +122,7 @@ df_final_combs data for dashboard
 
 """
 df_final["status"] = df_final["Exceso"]<0 #True significa que si cumple la normativa
-
+df_final.drop_duplicates(subset=["BBL","Calendar Year"], keep='first',inplace=True,ignore_index=False)
 
 df_final.to_csv("fuels.csv",index=False,encoding='utf-8')
 
