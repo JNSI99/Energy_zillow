@@ -16,4 +16,7 @@ df_test_fuels = df[[
     "Property Name"
     ]].copy()
 
+df_test_fuels.drop_duplicates(subset=["BBL","Calendar Year"],inplace = True)
+
 df_test_fuels.to_csv("basic_information.csv",index = False,encoding='utf-8')
+
