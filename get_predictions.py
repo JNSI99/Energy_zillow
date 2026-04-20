@@ -71,7 +71,7 @@ df_emisions["Limite"] = (df_emisions["Largest Property Use Type - Gross Floor Ar
 df_emisions["Exceso"] = df_test_fuels["Emisiones"] - df_emisions["Limite"]
 df_emisions["multa 2030"] = df_emisions["Exceso"] * 268
 
-df_predictions = df_emisions[["BBL","multa 2030"]].copy()
+df_predictions = df_emisions[["Calendar Year","BBL","multa 2030"]].copy()
 
 #Calculamos 2035
 
@@ -114,6 +114,8 @@ df_emisions["multa 2040"] = df_emisions["Exceso"] * 268
 
 df_predictions["multa 2040"] = df_emisions["multa 2040"]
 
+
+df_predictions.drop_duplicates(subset=["BBL","Calendar Year"], inplace=True, ignore_index=False)
 df_predictions.to_csv("predictions.csv", index=False,encoding="utf-8")
 
 
