@@ -1,3 +1,6 @@
+from turtle import pd
+
+
 def d_csv(url,nombre):
     #Download a csv
     import pandas as pd
@@ -114,6 +117,24 @@ def info_final(resultados,dataset):
     info_direccion = dataset[dataset['address'] == resultado_valido]
     lista = info_direccion.iloc[0].to_list()
     return lista[0],lista[1]
+
+def display_information(year, bbl):
+    
+    df_ranking = pd.read_csv('ranking.csv')
+    df_basic_information = pd.read_csv('basic_information.csv')
+    df_fuels = pd.read_csv('fuels.csv')
+
+    info1 = df_ranking[df_ranking['Calendar Year'] == year][df_ranking['BBL'] == bbl]
+    info3 = df_basic_information[df_basic_information['Calendar Year'] == year][df_basic_information['BBL'] == bbl]
+    info4 = df_fuels[df_fuels['Calendar Year'] == year][df_fuels['BBL'] == bbl]
+    display1 = pd.merge(info1, info3, on=['Calendar Year', 'BBL'], how='inner')
+    display2 = pd.merge(display1, info4, on=['Calendar Year', 'BBL'], how='inner')
+    return display2
+
+def display_predictions(year, bbl):
+    df_prediction = pd.read_csv('predictions.csv')
+    return df_prediction[(df_prediction['Calendar Year'] == year) & (df_prediction['BBL'] == bbl)]
+
 
 
 
