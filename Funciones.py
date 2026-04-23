@@ -91,8 +91,11 @@ def unir (ll84,plut):
 
    return new_df
 
-def buscar_direcciones_similares(direccion, df, columna, n=5):
+def buscar_direcciones_similares(direccion,n=5):
+    
     from rapidfuzz import process,fuzz
+    import pandas as pd
+    
     """
     direccion: string con la direccion a buscar
     df: dataframe
@@ -101,6 +104,8 @@ def buscar_direcciones_similares(direccion, df, columna, n=5):
 
     devuelve las n direcciones más similares
     """
+    df = pd.read_csv('basic_information.csv')
+    columna = 'address'
 
     direcciones = df[columna].dropna().astype(str).tolist()
 
@@ -119,19 +124,21 @@ def info_final(resultados,dataset):
     return lista[0],lista[1]
 
 def display_information(year, bbl):
-    
+    import pandas as pd
+
     df_ranking = pd.read_csv('ranking.csv')
     df_basic_information = pd.read_csv('basic_information.csv')
     df_fuels = pd.read_csv('fuels.csv')
 
-    info1 = df_ranking[df_ranking['Calendar Year'] == year][df_ranking['BBL'] == bbl]
-    info3 = df_basic_information[df_basic_information['Calendar Year'] == year][df_basic_information['BBL'] == bbl]
-    info4 = df_fuels[df_fuels['Calendar Year'] == year][df_fuels['BBL'] == bbl]
+    info1 = df_ranking[(df_ranking['Calendar Year'] == year)&(df_ranking['BBL'] == bbl)]
+    info3 = df_basic_information[(df_basic_information['Calendar Year'] == year)&(df_basic_information['BBL'] == bbl)]
+    info4 = df_fuels[(df_fuels['Calendar Year'] == year)&(df_fuels['BBL'] == bbl)]
     display1 = pd.merge(info1, info3, on=['Calendar Year', 'BBL'], how='inner')
     display2 = pd.merge(display1, info4, on=['Calendar Year', 'BBL'], how='inner')
     return display2
 
 def display_predictions(year, bbl):
+    import pandas as pd
     df_prediction = pd.read_csv('predictions.csv')
     return df_prediction[(df_prediction['Calendar Year'] == year) & (df_prediction['BBL'] == bbl)]
 
