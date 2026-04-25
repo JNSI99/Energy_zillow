@@ -77,7 +77,11 @@ df_emisions["Limite"] = (df_emisions["Largest Property Use Type - Gross Floor Ar
 
 
 df_emisions["Exceso"] = df_test_fuels["Emisiones"] - df_emisions["Limite"]
+#Solucion a limite 0
+df_emisions.loc[df_emisions["Limite"] == 0, "Exceso"] = 0
 df_emisions["multa"] = df_emisions["Exceso"] * 268
+
+
 
 
 # 1. Crea el DataFrame usando DOBLE corchete [[]] para mantenerlo como DataFrame
@@ -99,6 +103,12 @@ df_total_emisiones["Diferencia"] = df_total_emisiones["Emisiones Calculadas"] - 
 df_total_emisiones["Relativo"] = df_total_emisiones["Diferencia"] / df_total_emisiones["Emisiones DOB"]
 df_total_emisiones['Relativo'] = df_total_emisiones['Relativo'].replace([np.inf, -np.inf], 0)
 
+#Solucion a relativo
+df_total_emisiones['Relativo'] = (-df_emisions["Limite"] + df_total_emisiones["Emisiones Calculadas"]) / df_emisions["Limite"]
+df_total_emisiones['Relativo'] = df_total_emisiones['Relativo'].replace([np.inf, -np.inf], 0)
+
+#Solucion a multas negativas
+df_emisions['multa'] = df_emisions['multa'].apply(lambda x: max(x, 0))
 
 df_final = pd.merge(df_emisions, df_total_emisiones, how='inner', on=['BBL',"Calendar Year"])
 
@@ -122,7 +132,52 @@ df_final_combs data for dashboard
 
 """
 df_final["status"] = df_final["Exceso"]<0 #True significa que si cumple la normativa
-df_final.drop_duplicates(subset=["BBL","Calendar Year"], keep='first',inplace=True,ignore_index=False)
+#Arreglo redondeo cifras
+df_final["Limite"] = df_final["Limite"].round(0)
+df_final["Exceso"] = df_final["Exceso"].round(0)
+df_final["multa"] = df_final["multa"].round(0)
+df_final["Emisiones DOB"] = df_final["Emisiones DOB"].round(0)
+df_final["Emisiones Calculadas"] = df_final["Emisiones Calculadas"].round(0)
+df_final["Diferencia"] = df_final["Diferencia"].round(0)
+df_final["Relativo"] = df_final["Relativo"].round(3)
 
+#ARREGLO
+#Vamos a crear otro dataset con las columnas necesarias para el consumo pie chart
+df_fuels_consumption = df_test_fuels.copy()
+df_fuels_consumption.drop('Emisiones', axis=1, inplace=True)
+
+#calculamos toneladas de CO2
+df_fuels_consumption["Fuel Oil #2 Use (kBtu)"] = df_fuels_consumption["Fuel Oil #2 Use (kBtu)"] * 0.00007421 
+df_fuels_consumption["Fuel Oil #4 Use (kBtu)"] = df_fuels_consumption["Fuel Oil #4 Use (kBtu)"] * 0.00007529 
+df_fuels_consumption["Fuel Oil #5 & 6 Use (kBtu)"] = df_fuels_consumption["Fuel Oil #5 & 6 Use (kBtu)"] * 0.00007529
+df_fuels_consumption["Diesel #2 Use (kBtu)"] = df_fuels_consumption["Diesel #2 Use (kBtu)"] * 0.00007421
+df_fuels_consumption["Natural Gas Use (kBtu)"] = df_fuels_consumption["Natural Gas Use (kBtu)"] * 0.00005311
+df_fuels_consumption["Electricity Use - Grid Purchase (kWh)"] = df_fuels_consumption["Electricity Use - Grid Purchase (kWh)"] * 0.000288962
+df_fuels_consumption["District Steam Use (kBtu)"] = df_fuels_consumption["District Steam Use (kBtu)"] * 0.00004493
+df_fuels_consumption["Kerosene Use (kBtu)"] = df_fuels_consumption["Kerosene Use (kBtu)"] * 0.00007769
+df_fuels_consumption["Propane Use (kBtu)"] = df_fuels_consumption["Propane Use (kBtu)"] * 0.00006425
+#creamos nuevas conlumnas con la suma de varias columnas
+df_fuels_consumption["Fuel Oil"] = df_fuels_consumption["Fuel Oil #2 Use (kBtu)"] + df_fuels_consumption["Fuel Oil #4 Use (kBtu)"] + df_fuels_consumption["Fuel Oil #5 & 6 Use (kBtu)"]
+df_fuels_consumption["Electricity"] = df_fuels_consumption["Electricity Use - Grid Purchase (kWh)"]
+df_fuels_consumption["Natural Gas"] = df_fuels_consumption["Natural Gas Use (kBtu)"] + df_fuels_consumption["Propane Use (kBtu)"]
+df_fuels_consumption["Others"] = df_fuels_consumption["District Steam Use (kBtu)"] + df_fuels_consumption["Kerosene Use (kBtu)"] + df_fuels_consumption["Diesel #2 Use (kBtu)"]
+#Quitamos las columnas que no necesitamos
+df_fuels_consumption.drop('Fuel Oil #2 Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Fuel Oil #4 Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Fuel Oil #5 & 6 Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Diesel #2 Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Natural Gas Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Electricity Use - Grid Purchase (kWh)', axis=1, inplace=True)
+df_fuels_consumption.drop('District Steam Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Kerosene Use (kBtu)', axis=1, inplace=True)
+df_fuels_consumption.drop('Propane Use (kBtu)', axis=1, inplace=True)
+
+
+#Guardamos dfs
+
+df_final.drop_duplicates(subset=["BBL","Calendar Year"], keep='first',inplace=True,ignore_index=False)
+df_fuels_consumption.drop_duplicates(subset=["BBL","Calendar Year"], keep='first',inplace=True,ignore_index=False)  
+
+df_fuels_consumption.to_csv("fuels_analisis.csv",index=False,encoding='utf-8')
 df_final.to_csv("fuels.csv",index=False,encoding='utf-8')
 

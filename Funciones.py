@@ -91,27 +91,63 @@ def unir (ll84,plut):
 
    return new_df
 
-def buscar_direcciones_similares(direccion,n=5):
-    
-    from rapidfuzz import process,fuzz
+def buscar_direcciones_similares(direccion, n=5):
     import pandas as pd
-    
-    """
-    direccion: string con la direccion a buscar
-    df: dataframe
-    columna: nombre de la columna con direcciones
-    n: numero de coincidencias que quieres
-
-    devuelve las n direcciones más similares
-    """
+    import Funciones as f
     df = pd.read_csv('basic_information.csv')
-    columna = 'address'
+    columna1 = 'address'
+    columna2 = 'Address 1'
 
-    direcciones = df[columna].dropna().astype(str).tolist()
+    def normalizar(s):
+        s = str(s).lower()
+        s = s.replace("avenue", "ave")
+        s = s.replace("street", "st")
+        return s.strip()
 
-    resultados = process.extract(direccion, direcciones, scorer=fuzz.token_sort_ratio, limit=n)
+    # originales
+    direcciones = df[columna1].dropna().astype(str).tolist()
+    direcciones2 = df[columna2].dropna().astype(str).tolist()
 
-    return resultados
+    # normalizadas
+    direcciones_norm = [normalizar(d) for d in direcciones]
+    direcciones2_norm = [normalizar(d) for d in direcciones2]
+    direccion_norm = normalizar(direccion)
+
+    # 🔥 MUY IMPORTANTE: usar indices
+    resultados = process.extract(
+        direccion_norm,
+        direcciones_norm,
+        scorer=fuzz.WRatio,
+        limit=n
+    )
+
+    resultados2 = process.extract(
+        direccion_norm,
+        direcciones2_norm,
+        scorer=fuzz.WRatio,
+        limit=n
+    )
+
+    # usar el índice para volver al df original
+    idx1 = resultados[0][2]
+    idx2 = resultados2[0][2]
+
+    score1 = resultados[0][1]
+    score2 = resultados2[0][1]
+    
+    # data df
+    df_final = pd.read_csv('fuels.csv')
+    
+
+
+    # elegir el mejor match
+    if score1 >= score2:
+        bbl = df["BBL"].iloc[idx1]
+        
+        return f.display_information(2024, bbl)
+    else:
+        bbl = df["BBL"].iloc[idx2]
+        return f.display_information(2024, bbl)
 
 def info_final(resultados,dataset):
     #Devuelve la direccion mas acertada y su bbl correspondiente
@@ -141,6 +177,11 @@ def display_predictions(year, bbl):
     import pandas as pd
     df_prediction = pd.read_csv('predictions.csv')
     return df_prediction[(df_prediction['Calendar Year'] == year) & (df_prediction['BBL'] == bbl)]
+
+def display_fuels(year, bbl):
+    import pandas as pd
+    df_fuels = pd.read_csv('fuels_analisis.csv')
+    return df_fuels[(df_fuels['Calendar Year'] == year) & (df_fuels['BBL'] == bbl)]
 
 
 

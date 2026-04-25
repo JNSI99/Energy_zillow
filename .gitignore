@@ -1,5 +1,7 @@
 # Archivo .gitignore
 *.csv
-/__pycache__
+__pycache__
 test.py
 test1.py
+secrets.toml
+.streamlit

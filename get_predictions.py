@@ -114,8 +114,15 @@ df_emisions["multa 2040"] = df_emisions["Exceso"] * 268
 
 df_predictions["multa 2040"] = df_emisions["multa 2040"]
 
-
+#Drop duplicates
 df_predictions.drop_duplicates(subset=["BBL","Calendar Year"], inplace=True, ignore_index=False)
+
+#Solucion multas negativas
+df_predictions['multa 2030'] = df_emisions['multa 2030'].apply(lambda x: max(x, 0))
+df_predictions['multa 2035'] = df_emisions['multa 2035'].apply(lambda x: max(x, 0))
+df_predictions['multa 2040'] = df_emisions['multa 2040'].apply(lambda x: max(x, 0))
+
+
 df_predictions.to_csv("predictions.csv", index=False,encoding="utf-8")
 
 
