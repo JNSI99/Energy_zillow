@@ -1,7 +1,6 @@
 import pandas as pd
 import Funciones as f
 import Limites as lm
-import certifi
 from rapidfuzz import process, utils
 import numpy as np
 

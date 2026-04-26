@@ -3,3 +3,10 @@ ssl
 numpy
 certifi
 rapidfuzz
+streamlit
+openai
+python-dotenv
+streamlit-chat
+plotly
+turtle
+

@@ -5,8 +5,7 @@
 
 import pandas as pd
 import Funciones as f
-import certifi
-import ssl
+
 from rapidfuzz import process, utils
 
 
