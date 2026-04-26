@@ -1,5 +1,4 @@
 pandas
-ssl
 numpy
 certifi
 rapidfuzz
