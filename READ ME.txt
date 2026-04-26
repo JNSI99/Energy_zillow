@@ -4,8 +4,6 @@ TASKS
 -we gotta use a model to stimate energy prices
 energy consuption estimation -> energy prices estimation -> total money cost in the future fine + energy comsuption
 
--we gotta create the dashboard
-streamlit + gemini api (advices for better what can we do)
 
 -Azure
 
