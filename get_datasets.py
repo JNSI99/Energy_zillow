@@ -12,7 +12,9 @@ print("Starting download: Datasets", flush=True)
 url_ll84 = "https://data.cityofnewyork.us/api/views/5zyy-y8am/rows.csv?accessType=DOWNLOAD"
 url_pluto = "https://data.cityofnewyork.us/api/views/64uk-42ks/rows.csv?accessType=DOWNLOAD"
 
+print("Starting download: LL84", flush=True)
 f.d_csv(url_ll84,'LL84.csv')
+print("Starting download: PLUTO", flush=True)
 f.d_csv(url_pluto,'Pluto.csv')
 
 print(f"Finished download: Datasets", flush=True)
