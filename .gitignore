@@ -1,5 +1,6 @@
 # Archivo .gitignore
-*.csv
+LL84.csv
+Pluto.csv
 __pycache__
 test.py
 test1.py
