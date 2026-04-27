@@ -4,7 +4,7 @@ echo "Running ETL pipeline..."
 
 
 echo "Running get_datasets.py"
-python get_datasets.py
+python -u get_datasets.py
 echo "Running get_transform.py"
 python get_transform.py
 echo "Running get_fuels.py"
