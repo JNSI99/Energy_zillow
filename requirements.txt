@@ -7,5 +7,4 @@ openai
 python-dotenv
 streamlit-chat
 plotly
-turtle
 
