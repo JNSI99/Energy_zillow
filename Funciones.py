@@ -1,4 +1,4 @@
-from turtle import pd
+import pandas as pd
 
 
 def d_csv(url,nombre):
