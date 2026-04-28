@@ -253,6 +253,7 @@ if st.session_state.pagina_actual == "busqueda":
 
         if resultado is not None:
             st.session_state.datos_busqueda = resultado
+            st.session_state.bbl = resultado_bbl
             st.session_state.predicciones = predicciones
             st.session_state.fuels_info = fuels_info
             st.session_state.pagina_actual = "dashboard"
@@ -323,6 +324,7 @@ elif st.session_state.pagina_actual == "dashboard":
     natural_gas = to_float(data_fuels.get("Natural Gas", 0))
     others = to_float(data_fuels.get("Others", 0))
     oil = to_float(data_fuels.get("Fuel Oil", 0))
+    Surface = to_float(data.get("Largest Property Use Type - Gross Floor Area (ft²)", 0))
 
     col1, col2 = st.columns([1, 1.5], gap="large")
 
@@ -417,14 +419,14 @@ elif st.session_state.pagina_actual == "dashboard":
             st.write("### Summary")
 
             resumen_df = pd.DataFrame({
-                "Metric": [
+                "Metric": ["Surface (ft²)",
                     "DOB Emissions (tCO₂e)",
                     "Calculated Emissions (tCO₂e)",
                     "Limit (tCO₂e)",
                     "Excess (tCO₂e)",
                     "Penalty"
                 ],
-                "Value": [
+                "Value": [Surface,
                     emisiones_dob,
                     emisiones,
                     limite,
@@ -466,7 +468,58 @@ elif st.session_state.pagina_actual == "dashboard":
             
             st.plotly_chart(fig_pie, use_container_width=True)
             
-    st.divider()
+
+     
+    st.write("## Future comsuption")
+    df = f.display_future(st.session_state.bbl)
+
+    if df.empty:
+        st.warning("No hay datos para el BBL seleccionado")
+    else:
+    # Transformar a formato largo
+            plot_df = pd.DataFrame({
+                "year": ["2030", "2030", "2030", "2035", "2035", "2035", "2040", "2040", "2040"],
+                "scenario": ["Low", "Med", "High"] * 3,
+                "value": [
+                    df["low_2030"].iloc[0], df["med_2030"].iloc[0], df["high_2030"].iloc[0],
+                    df["low_2035"].iloc[0], df["med_2035"].iloc[0], df["high_2035"].iloc[0],
+                    df["low_2040"].iloc[0], df["med_2040"].iloc[0], df["high_2040"].iloc[0],
+                ]
+            })
+
+    # Convertir a porcentaje
+            plot_df["pct"] = plot_df["value"] * 100
+
+    # Redondear al entero más cercano
+            plot_df["pct_round"] = plot_df["pct"].round().astype(int)
+
+    # Texto para mostrar en barras
+            plot_df["label"] = plot_df["pct_round"].astype(str) + "%"
+
+    # Gráfico
+            fig = px.bar(
+                plot_df,
+                x="year",
+                y="pct",
+                color="scenario",
+                barmode="group",
+                text="label",
+                labels={"pct": "Variation (%)", "year": "Year"},
+                title="Consumption budget expectations due to fuel prices fluctuations"
+            )
+
+            fig.update_layout(
+                title={
+                    "text": "Consumption budget expectations due to fuel price fluctuations",
+                    "font": {"size": 26} 
+                }
+            )
+
+            fig.update_traces(textposition="outside")
+
+            st.plotly_chart(fig, use_container_width=True)
+
+            st.divider()
 
     with st.expander("🔎 Ver datos crudos"):
         st.dataframe(pd.DataFrame([data]), use_container_width=True)
@@ -482,6 +535,10 @@ elif st.session_state.pagina_actual == "dashboard":
                     data_predictions,
                     data_fuels
                 )
-                st.markdown(consejos)
+                del f
+                st.markdown(
+                            f"<div style='font-size:18px; line-height:1.6'>{consejos}</div>",
+                             unsafe_allow_html=True
+                )
             except Exception as e:
                 st.error(f"Failed to generate recommendations: {e}")

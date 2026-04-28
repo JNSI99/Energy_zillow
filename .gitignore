@@ -6,3 +6,9 @@ test.py
 test1.py
 secrets.toml
 .streamlit
+test5.py
+electricity_forecast.csv
+gas_forecast.csv
+oil_forecast.csv
+weights_fuels.csv
+

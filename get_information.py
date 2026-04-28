@@ -13,7 +13,8 @@ df_test_fuels = df[[
     "BBL",
     "Address 1",
     "address",
-    "Property Name"
+    "Property Name",
+    "Largest Property Use Type - Gross Floor Area (ft²)"
     ]].copy()
 
 df_test_fuels.drop_duplicates(subset=["BBL","Calendar Year"],inplace = True)

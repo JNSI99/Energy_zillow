@@ -183,6 +183,11 @@ def display_fuels(year, bbl):
     df_fuels = pd.read_csv('fuels_analisis.csv')
     return df_fuels[(df_fuels['Calendar Year'] == year) & (df_fuels['BBL'] == bbl)]
 
-
+def display_future(bbl):
+    import pandas as pd
+    df_final = pd.read_csv("pred_to_display.csv")
+    df_final["BBL"] = df_final["BBL"].astype("int")
+    df = df_final[df_final["BBL"]==bbl].copy()
+    return df
 
 
